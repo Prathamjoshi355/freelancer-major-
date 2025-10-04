@@ -1,7 +1,7 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
+import { Button } from "../../../components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card"
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/table"
+import { Badge } from "../../../components/ui/badge"
 
 const jobs = [
   { id: "JOB-1021", title: "Next.js Landing Page", client: "Acme Inc", status: "Pending" },

@@ -1,6 +1,6 @@
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
-import { RegisterForm } from "@/components/auth/register-form"
+import { RegisterForm } from "../../../components/auth/register-form"
 
 export default function RegisterClientPage() {
   return (

@@ -1,6 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card"
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/table"
+import { Badge } from "../../../components/ui/badge"
 
 const txs = [
   { id: "#TX-3001", date: "2025-08-10", party: "Jane Cooper", type: "Payout", amount: 1200, status: "Completed" },

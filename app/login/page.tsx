@@ -1,11 +1,10 @@
-import { SiteHeader } from "@/components/site-header"
+import Navbar from "../../components/Navbar"
 import { SiteFooter } from "@/components/site-footer"
-import { LoginForm } from "@/components/auth/login-form"
+import { LoginForm } from "../../components/auth/login-form"
 
 export default function LoginPage() {
   return (
     <main className="font-sans">
-      <SiteHeader />
       <section className="mx-auto max-w-6xl px-4 py-12 md:py-16">
         <div className="mx-auto max-w-md text-center">
           <h1 className="text-2xl font-semibold text-slate-900 md:text-3xl">Welcome back</h1>
@@ -17,6 +16,7 @@ export default function LoginPage() {
         </div>
       </section>
       <SiteFooter />
+
     </main>
   )
 }

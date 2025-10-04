@@ -1,5 +1,5 @@
 import Link from "next/link"
-import Navbar from "@/components/Navbar";
+import Navbar from "../../../components/Navbar";
 export default function LoginPage() {
   return (
     <section className="mx-auto max-w-md">
