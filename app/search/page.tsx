@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { SearchFilters, type SearchMode } from "@/components/search/search-filters"
-import { SearchResults } from "@/components/search/search-results"
+import { SearchFilters, type SearchMode } from "../../components/search/search-filters"
+import { SearchResults } from "../../components/search/search-results"
 
 export default function SearchPage() {
   const [params, setParams] = useState<{ mode: SearchMode; q: string; category: string; remoteOnly: boolean }>({

@@ -1,6 +1,6 @@
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
-import { ForgotPasswordForm } from "@/components/auth/forgot-password-form"
+import { ForgotPasswordForm } from "../../components/auth/forgot-password-form"
 
 export default function ForgotPasswordPage() {
   return (

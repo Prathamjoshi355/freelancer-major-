@@ -1,9 +1,9 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { ConversationList } from "@/components/chat/conversation-list"
-import { ChatThread } from "@/components/chat/chat-thread"
-import { Card } from "@/components/ui/card"
+import { ConversationList } from "../../components/chat/conversation-list"
+import { ChatThread } from "../../components/chat/chat-thread"
+import { Card } from "../../components/ui/card"
 
 export default function MessagesPage() {
   const conversations = useMemo(

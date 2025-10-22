@@ -3,12 +3,12 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../../components/ui/card"
+import { Button } from "../../components/ui/button"
+import { Input } from "../../components/ui/input"
+import { Label } from "../../components/ui/label"
+import { Textarea } from "../../components/ui/textarea"
+import { Badge } from "../../components/ui/badge"
 
 export function EditProfileForm() {
   const [name, setName] = useState("Jordan Doe")
@@ -33,7 +33,7 @@ export function EditProfileForm() {
   }
 
   return (
-    <Card asChild>
+    <Card >
       <form onSubmit={onSubmit} className="w-full">
         <CardHeader>
           <CardTitle className="text-base">Edit Profile</CardTitle>

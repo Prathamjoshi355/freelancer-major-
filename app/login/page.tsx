@@ -1,5 +1,5 @@
 import Navbar from "../../components/Navbar"
-import { SiteFooter } from "@/components/site-footer"
+import { SiteFooter } from "../../components/site-footer"
 import { LoginForm } from "../../components/auth/login-form"
 
 export default function LoginPage() {

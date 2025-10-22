@@ -14,100 +14,71 @@ import {
 import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
 import Link from "next/link"
-import { cn } from "@/lib/utils"
-
-type Role = "freelancer" | "client"
+import { json } from "stream/consumers"
 
 export function LoginForm() {
-  const [role, setRole] = useState<Role>("freelancer")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [strength, setStrength] = useState(0)
 
-  // password strength checker
- 
-
   async function onSubmit(e: React.FormEvent) {
-  e.preventDefault()
-  setLoading(true)
-  setError(null)
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
 
-  try {
-    const response = await fetch("api/login/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password, role }),
-    })
+    try {
+      const response = await fetch("http://127.0.0.1:8000/login/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      })
 
-    const data = await response.json()
+      const data = await response.json()
 
-    if (!response.ok) {
-      // If backend sends an explicit role mismatch message
-      if (data.detail === "Role mismatch") {
-        setError("Your email is registered as a different role.")
-      } else {
-        setError("Your email or password is incorrect.")
+      if (!response.ok) {
+        setError(data.detail || "Your email or password is incorrect.")
+        return
       }
-      return
+      console.log (data)
+      // console.log({email, password})
+
+
+      const userRole = data.role || data.user?.role
+      console.log(data.role)
+    
+      if (userRole === "freelancer") {
+      window.location.href = "/freelancer/dashboard"
+      console.log("[v0] Login successful", data)
+      } else if (userRole === "client") {
+      window.location.href = "/client/dashboard"
+      console.log("[v0] Login successful", data)
+      } else {
+      console.error("Unknown role:", userRole)
+      setError("Unknown role, cannot redirect.")
+
     }
-
-    console.log("[v0] Login successful", data)
-    window.location.href = "/"
-  } catch (err) {
-    console.error("Login error:", err)
-    setError("Your email or password is incorrect.")
-  } finally {
-    setLoading(false)
+   } catch (err) {
+      console.error("Login error:", err)
+      setError("Unable to login. Please try again.")
+    } finally {
+      setLoading(false)
+    }
   }
-}
-
 
   return (
     <Card className="w-full max-w-md border-slate-200 shadow-lg rounded-2xl">
       <CardHeader className="space-y-1 text-center">
         <CardTitle className="text-2xl font-bold text-slate-900">Welcome Back 👋</CardTitle>
         <CardDescription className="text-slate-600">
-          {role === "freelancer"
-            ? "Access your dashboard and proposals."
-            : "Manage your jobs and hire talent."}
+          Sign in to access your dashboard.
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        {/* Role Switcher */}
-        <div className="mb-6 grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() => setRole("freelancer")}
-            className={cn(
-              "rounded-lg border px-4 py-2.5 text-sm font-medium transition-all duration-200",
-              role === "freelancer"
-                ? "border-blue-600 bg-blue-600 text-white shadow-md"
-                : "border-slate-200 text-slate-700 hover:bg-slate-50"
-            )}
-            aria-pressed={role === "freelancer"}
-          >
-            Freelancer
-          </button>
-          <button
-            type="button"
-            onClick={() => setRole("client")}
-            className={cn(
-              "rounded-lg border px-4 py-2.5 text-sm font-medium transition-all duration-200",
-              role === "client"
-                ? "border-blue-600 bg-blue-600 text-white shadow-md"
-                : "border-slate-200 text-slate-700 hover:bg-slate-50"
-            )}
-            aria-pressed={role === "client"}
-          >
-            Client
-          </button>
-        </div>
 
-        {/* Form */}
+      <CardContent>
         <form onSubmit={onSubmit} className="flex flex-col gap-5">
           <div className="grid gap-2">
             <Label htmlFor="email" className="text-sm font-medium text-slate-700">
@@ -133,26 +104,10 @@ export function LoginForm() {
               type="password"
               required
               value={password}
-              onChange={(e) => {
-                setPassword(e.target.value)
-                // checkStrength(e.target.value)
-              }}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="********"
               className="rounded-lg"
             />
-
-            {/* Password strength bar */}
-            {password && (
-              <div className="mt-2">
-                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    // className={`h-2 transition-all duration-300 ${getStrengthColor()}`}
-                    style={{ width: `${(strength / 4) * 100}%` }}
-                  />
-                </div>
-                {/* <p className="text-xs mt-1 font-medium text-slate-600">{getStrengthLabel()}</p> */}
-              </div>
-            )}
           </div>
 
           {error && (
@@ -168,7 +123,7 @@ export function LoginForm() {
           >
             {loading ? "Signing in..." : "Sign in"}
           </Button>
-
+{/* 
           <div className="relative my-2">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-slate-200" />
@@ -178,18 +133,18 @@ export function LoginForm() {
             </div>
           </div>
 
-            <GoogleAuthButton
-              onClick={() => {
-                setLoading(true)
-                setTimeout(() => {
-                  console.log("[v0] Google auth clicked")
-                  window.location.href = "/"
-                }, 800)
-              }}
-              disabled={loading}
-              loading={loading}
-              className="w-full bg-white text-slate-700 hover:bg-slate-50 border rounded-lg font-medium shadow-sm transition-all"
-            />
+          <GoogleAuthButton
+            onClick={() => {
+              setLoading(true)
+              setTimeout(() => {
+                console.log("[v0] Google auth clicked")
+                window.location.href = "/"
+              }, 800)
+            }}
+            disabled={loading}
+            loading={loading}
+            className="w-full bg-white text-slate-700 hover:bg-slate-50 border rounded-lg font-medium shadow-sm transition-all"
+          /> */}
 
           <div className="flex items-center justify-between text-sm mt-4">
             <Link href="/forgot-password" className="text-blue-600 hover:underline">

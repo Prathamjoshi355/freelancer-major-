@@ -164,7 +164,7 @@ export function RegisterForm({ role }: { role: "client" | "freelancer" }) {
           >
             {loading ? "Creating account..." : "Create account"}
           </Button>
-
+{/* 
           <div className="relative my-2">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-slate-200" />
@@ -181,7 +181,7 @@ export function RegisterForm({ role }: { role: "client" | "freelancer" }) {
             disabled={loading}
             loading={loading}
             className="w-full bg-white text-slate-700 hover:bg-slate-50 border rounded-lg font-medium shadow-sm transition-all"
-          />
+          /> */}
         </form>
       </CardContent>
     </Card>
