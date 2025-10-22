@@ -1,5 +1,5 @@
 import Link from "next/link"
-
+// import { BrowserRouter, Route, Routes, Navigate }from "react-router-dom"
 export default function HomePage() {
   return (
     <div className="space-y-10">

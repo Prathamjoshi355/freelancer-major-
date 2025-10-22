@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { Button } from "../../../components/ui/button"
 
 export default function MyJobsPage() {
-  const jobs = [
+  const jobs = [    
     { id: "J-1024", title: "Landing page redesign", status: "Active", proposals: 7 },
     { id: "J-1023", title: "iOS bug fix", status: "Completed", proposals: 4 },
     { id: "J-1022", title: "Shopify theme tweaks", status: "Pending", proposals: 2 },

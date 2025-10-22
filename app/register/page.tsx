@@ -9,7 +9,7 @@ import { Briefcase, User } from "lucide-react"
 export default function RegisterIndexPage() {
   return (
     <>
-      <SiteHeader />
+      {/* <SiteHeader /> */}
       <main className="mx-auto max-w-6xl px-4 py-12">
         <section className="mx-auto max-w-2xl text-center">
           <h1 className="text-3xl font-semibold md:text-4xl">Create your account</h1>
@@ -41,7 +41,7 @@ export default function RegisterIndexPage() {
           </div>
         </section>
       </main>
-      <SiteFooter />
+      {/* <SiteFooter /> */}
     </>
   )
 }

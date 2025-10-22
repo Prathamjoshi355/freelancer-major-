@@ -1,5 +1,5 @@
 import type { ReactNode } from "react"
-import { FreelancerNav } from "@/components/freelancer/nav"
+import { FreelancerNav } from "../../components/freelancer/nav"
 
 export default function FreelancerLayout({ children }: { children: ReactNode }) {
   return (

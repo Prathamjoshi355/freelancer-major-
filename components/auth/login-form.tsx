@@ -27,59 +27,44 @@ export function LoginForm() {
   const [strength, setStrength] = useState(0)
 
   // password strength checker
-  const checkStrength = (value: string) => {
-    let score = 0
-    if (value.length >= 6) score++
-    if (/[A-Z]/.test(value)) score++
-    if (/[0-9]/.test(value)) score++
-    if (/[^A-Za-z0-9]/.test(value)) score++
-    setStrength(score)
-  }
-
-  const getStrengthLabel = () => {
-    switch (strength) {
-      case 1:
-        return "Very Weak"
-      case 2:
-        return "Weak"
-      case 3:
-        return "Strong"
-      case 4:
-        return "Very Strong"
-      default:
-        return ""
-    }
-  }
-
-  const getStrengthColor = () => {
-    switch (strength) {
-      case 1:
-        return "bg-red-500"
-      case 2:
-        return "bg-yellow-500"
-      case 3:
-        return "bg-blue-500"
-      case 4:
-        return "bg-green-500"
-      default:
-        return "bg-gray-200"
-    }
-  }
+ 
 
   async function onSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
-    try {
-      await new Promise((r) => setTimeout(r, 800))
-      console.log("[v0] Login submitted", { role, email })
-      window.location.href = "/"
-    } catch (err: any) {
-      setError("Something went wrong. Please try again.")
-    } finally {
-      setLoading(false)
+  e.preventDefault()
+  setLoading(true)
+  setError(null)
+
+  try {
+    const response = await fetch("api/login/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password, role }),
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      // If backend sends an explicit role mismatch message
+      if (data.detail === "Role mismatch") {
+        setError("Your email is registered as a different role.")
+      } else {
+        setError("Your email or password is incorrect.")
+      }
+      return
     }
+
+    console.log("[v0] Login successful", data)
+    window.location.href = "/"
+  } catch (err) {
+    console.error("Login error:", err)
+    setError("Your email or password is incorrect.")
+  } finally {
+    setLoading(false)
   }
+}
+
 
   return (
     <Card className="w-full max-w-md border-slate-200 shadow-lg rounded-2xl">
@@ -150,7 +135,7 @@ export function LoginForm() {
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value)
-                checkStrength(e.target.value)
+                // checkStrength(e.target.value)
               }}
               placeholder="********"
               className="rounded-lg"
@@ -161,11 +146,11 @@ export function LoginForm() {
               <div className="mt-2">
                 <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                   <div
-                    className={`h-2 transition-all duration-300 ${getStrengthColor()}`}
+                    // className={`h-2 transition-all duration-300 ${getStrengthColor()}`}
                     style={{ width: `${(strength / 4) * 100}%` }}
                   />
                 </div>
-                <p className="text-xs mt-1 font-medium text-slate-600">{getStrengthLabel()}</p>
+                {/* <p className="text-xs mt-1 font-medium text-slate-600">{getStrengthLabel()}</p> */}
               </div>
             )}
           </div>
@@ -193,18 +178,18 @@ export function LoginForm() {
             </div>
           </div>
 
-          <GoogleAuthButton
-            onClick={() => {
-              setLoading(true)
-              setTimeout(() => {
-                console.log("[v0] Google auth clicked")
-                window.location.href = "/"
-              }, 800)
-            }}
-            disabled={loading}
-            loading={loading}
-            className="w-full bg-white text-slate-700 hover:bg-slate-50 border rounded-lg font-medium shadow-sm transition-all"
-          />
+            <GoogleAuthButton
+              onClick={() => {
+                setLoading(true)
+                setTimeout(() => {
+                  console.log("[v0] Google auth clicked")
+                  window.location.href = "/"
+                }, 800)
+              }}
+              disabled={loading}
+              loading={loading}
+              className="w-full bg-white text-slate-700 hover:bg-slate-50 border rounded-lg font-medium shadow-sm transition-all"
+            />
 
           <div className="flex items-center justify-between text-sm mt-4">
             <Link href="/forgot-password" className="text-blue-600 hover:underline">

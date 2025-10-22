@@ -1,8 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/table"
+import { Badge } from "../../../components/ui/badge"
 
-export default function ProposalsPage() {
+export default function ProposalsPage() { 
   const rows = [
     { job: "Marketing site redesign", date: "2025-08-01", amount: "$1,200", status: "Pending" },
     { job: "Mobile app UX audit", date: "2025-08-02", amount: "$800", status: "Accepted" },
