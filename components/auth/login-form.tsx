@@ -51,10 +51,10 @@ export function LoginForm() {
       console.log(data.role)
     
       if (userRole === "freelancer") {
-      window.location.href = "/freelancer/dashboard"
+      window.location.href = "/freelancer"
       console.log("[v0] Login successful", data)
       } else if (userRole === "client") {
-      window.location.href = "/client/dashboard"
+      window.location.href = "/client"
       console.log("[v0] Login successful", data)
       } else {
       console.error("Unknown role:", userRole)
