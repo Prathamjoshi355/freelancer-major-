@@ -3,11 +3,10 @@ import { ACCESS_TOCKEN } from './tokens';
 import { config } from 'process';
 import { error } from 'console';
  
-const apiUrl =                                                                                                                                "http://127.0.0.1:8000";
+const apiUrl = 'http://localhost:8000/api';
 const api = axios.create({
-   baseURL: process.env.NEXT_PUBLIC_VITA_API_URL || apiUrl,
-}
-);
+   baseURL: process.env.NEXT_PUBLIC_VITA_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || apiUrl,
+});
 
 api.interceptors.request.use(
     (config) =>{

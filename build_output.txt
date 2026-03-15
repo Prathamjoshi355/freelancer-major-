@@ -1,0 +1,46 @@
+
+> my-v0-project@0.1.0 build
+> next build
+
+   ??? Next.js 15.2.4
+   - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+node.exe : Failed to compile.
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
+    + CategoryInfo           
+   : NotSpecified: (Failed   
+  to compile.:String) [],    
+ RemoteException
+    + FullyQualifiedErrorId  
+   : NativeCommandError
+ 
+
+./src/app/client/post-job/pag
+e.tsx
+Module not found: Can't 
+resolve 
+'/components/ui/select'
+
+https://nextjs.org/docs/messa
+ges/module-not-found
+
+./src/app/client/payments/pag
+e.tsx
+Module not found: Can't 
+resolve 
+'/components/ui/badge'
+
+https://nextjs.org/docs/messa
+ges/module-not-found
+
+
+> Build failed because of 
+webpack errors

@@ -1,4 +1,5 @@
-import { PageContainer } from "@/components/page"
+import { PublicProfile } from "@/components/profile/public-profile"
+
 export default function ProfilePage() {
-  return <PageContainer title="Public Profile" description="Showcase skills, portfolio, ratings, and reviews." />
+  return <PublicProfile />
 }

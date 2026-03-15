@@ -1,34 +1,40 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
-import "./globals.css"
-import { SiteHeader } from "@/components/site-header"
-import { SiteFooter } from "@/components/site-footer"
+import "./globals.css";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import { AuthProvider } from "@/context/AuthContext";
+import Navbar from "@/components/Navbar";
+import Sidebar from "@/components/Sidebar";
 
-const geistSans = Geist({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-geist-sans",
-})
-const geistMono = Geist_Mono({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-geist-mono",
-})
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Freelance Marketplace",
-  description: "Hire talent or find gigs fast.",
-}
+  title: "Freelance Platform",
+  description: "Next-gen freelancing platform with verification and testing",
+};
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-      <body className="min-h-dvh bg-background text-foreground">
-        <SiteHeader />
-        <main className="container mx-auto px-4 py-6">{children}</main>
-        <SiteFooter />
+    <html lang="en">
+      <body className={`${inter.className} bg-gray-50`}>
+        <AuthProvider>
+          <div className="flex min-h-screen">
+            {/* Sidebar */}
+            
+
+            <div className="flex-1 flex flex-col">
+              {/* Navbar */}
+              
+
+              {/* Page Content */}
+              <main className="flex-1 p-6">{children}</main>
+            </div>
+          </div>
+        </AuthProvider>
       </body>
     </html>
-  )
+  );
 }
