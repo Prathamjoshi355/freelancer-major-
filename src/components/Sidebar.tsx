@@ -19,15 +19,15 @@ const Sidebar = () => {
         <nav className="flex flex-col space-y-2">
           {role === "freelancer" ? (
             <>
-              {/* <Link href="/dashboard" className="px-3 py-2 rounded hover:bg-blue-100">
+              <Link href="/dashboard" className="px-3 py-2 rounded hover:bg-blue-100">
                 Dashboard
-              </Link> */}
-              {/* <Link href="/jobs" className="px-3 py-2 rounded hover:bg-blue-100">
+              </Link>
+              <Link href="/jobs" className="px-3 py-2 rounded hover:bg-blue-100">
                 Browse Jobs
-              </Link> */}
-              {/* <Link href="/freelancer/skills" className="px-3 py-2 rounded hover:bg-blue-100">
+              </Link>
+              <Link href="/freelancer/skills" className="px-3 py-2 rounded hover:bg-blue-100">
                 Skills
-              </Link> */}
+              </Link>
               <Link href="/contracts" className="px-3 py-2 rounded hover:bg-blue-100">
                 Contracts
               </Link>
