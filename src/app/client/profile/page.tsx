@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
 
-export default function FreelancerProfileEditPage() {
+export default function ClientProfilePage() {
   redirect("/onboarding/profile");
 }

@@ -5,12 +5,10 @@ import { cn } from "@/lib/utils"
 import { usePathname } from "next/navigation"
 
 const items = [
-  { href: "/client/dashboard", label: "Dashboard" },
+  { href: "/dashboard", label: "Dashboard" },
   { href: "/client/post-job", label: "Post a Job" },
   { href: "/client/jobs", label: "My Jobs" },
-  { href: "/client/proposals", label: "Proposals" },
-  { href: "/client/hire", label: "Hire / Contract" },
-  { href: "/client/payments", label: "Payments" },
+  { href: "/contracts", label: "Contracts" },
 ]
 
 export function ClientNav() {

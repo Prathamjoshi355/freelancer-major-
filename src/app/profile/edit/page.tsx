@@ -16,10 +16,10 @@ export default function EditProfilePage() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const res = await fetch("/api/user", { credentials: "include" }); // ✅ backend should return user info
+        const res = await fetch("http://localhost:8000/api/accounts/user/", { credentials: "include" }); // ✅ backend should return user info
         if (!res.ok) throw new Error("Failed to fetch user info");
         const data = await res.json();
-        setUserData(data);
+        setUserData(data);  
       } catch (error) {
         console.error("Error fetching user data:", error);
       } finally {

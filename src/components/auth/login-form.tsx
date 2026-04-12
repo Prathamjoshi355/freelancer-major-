@@ -1,167 +1,84 @@
-"use client"
+"use client";
 
-import type React from "react"
-import GoogleAuthButton from "../ui/google"
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import Link from "next/link"
-import { json } from "stream/consumers"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+import { useAuth } from "@/context/AuthContext";
+import { authAPI, normalizeApiError } from "@/services/apiService";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
 
 export function LoginForm() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [strength, setStrength] = useState(0)
+  const router = useRouter();
+  const { login } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    setLoading(true);
+    setError(null);
 
     try {
-      const response = await fetch("http://localhost:8000/api/token/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      })
-
-      if (!response.ok) {
-        // Try to parse error response
-        let errorMessage = "Your email or password is incorrect."
-        try {
-          const data = await response.json()
-          errorMessage = data.detail || data.message || errorMessage
-        } catch {
-          errorMessage = `Login failed with status ${response.status}`
-        }
-        setError(errorMessage)
-        return
-      }
-
-      const data = await response.json()
-
-      // Store tokens and user data
-      localStorage.setItem("access_token", data.access)
-      localStorage.setItem("refresh_token", data.refresh)
-      localStorage.setItem("user_data", JSON.stringify(data.user || { email, role: data.user?.role }))
-
-      const userRole = data.user?.role
-
-      // Redirect based on role
-      if (userRole === "freelancer") {
-        window.location.href = "/freelancer/profile/edit"
-      } else if (userRole === "client") {
-        window.location.href = "/client/profile/edit"
-      } else {
-        setError("Unknown role. Please contact support.")
-      }
-    } catch (err) {
-      console.error("Login error:", err)
-      setError("Unable to login. Please check your connection and try again.")
+      const response = await authAPI.login(email, password);
+      await login(
+        response.data.user,
+        response.data.access,
+        response.data.refresh
+      );
+      router.push("/dashboard");
+    } catch (submitError) {
+      setError(normalizeApiError(submitError));
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
   return (
-    <Card className="w-full max-w-md border-slate-200 shadow-lg rounded-2xl">
-      <CardHeader className="space-y-1 text-center">
-        <CardTitle className="text-2xl font-bold text-slate-900">Welcome Back 👋</CardTitle>
-        <CardDescription className="text-slate-600">
-          Sign in to access your dashboard.
+    <Card className="w-full max-w-md border-white/70 bg-white/90 shadow-[0_24px_80px_rgba(15,23,42,0.10)]">
+      <CardHeader>
+        <CardTitle className="font-serif text-3xl">Login</CardTitle>
+        <CardDescription>
+          Use the platform account you registered with face verification.
         </CardDescription>
       </CardHeader>
-
       <CardContent>
-        <form onSubmit={onSubmit} className="flex flex-col gap-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid gap-2">
-            <Label htmlFor="email" className="text-sm font-medium text-slate-700">
-              Email
-            </Label>
+            <Label htmlFor="login-email">Email</Label>
             <Input
-              id="email"
+              id="login-email"
               type="email"
-              required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="rounded-lg"
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="name@company.com"
+              required
             />
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="password" className="text-sm font-medium text-slate-700">
-              Password
-            </Label>
+            <Label htmlFor="login-password">Password</Label>
             <Input
-              id="password"
+              id="login-password"
               type="password"
-              required
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="********"
-              className="rounded-lg"
+              onChange={(event) => setPassword(event.target.value)}
+              required
             />
           </div>
 
-          {error && (
-            <p role="alert" className="text-sm text-red-600">
-              {error}
-            </p>
-          )}
+          {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white hover:bg-blue-700 rounded-lg font-medium shadow-sm transition-all"
-          >
+          <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Signing in..." : "Sign in"}
           </Button>
-{/* 
-          <div className="relative my-2">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-slate-200" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-slate-500">or continue with</span>
-            </div>
-          </div>
-
-          <GoogleAuthButton
-            onClick={() => {
-              setLoading(true)
-              setTimeout(() => {
-                console.log("[v0] Google auth clicked")
-                window.location.href = "/"
-              }, 800)
-            }}
-            disabled={loading}
-            loading={loading}
-            className="w-full bg-white text-slate-700 hover:bg-slate-50 border rounded-lg font-medium shadow-sm transition-all"
-          /> */}
-
-          <div className="flex items-center justify-between text-sm mt-4">
-            <Link href="/forgot-password" className="text-blue-600 hover:underline">
-              Forgot password?
-            </Link>
-            <Link href="/register" className="text-slate-600 hover:text-slate-900">
-              Create an account
-            </Link>
-          </div>
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }

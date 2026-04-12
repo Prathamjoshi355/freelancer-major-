@@ -5,12 +5,10 @@ import { cn } from "@/lib/utils"
 import { usePathname } from "next/navigation"
 
 const items = [
-  { href: "/freelancer/dashboard", label: "Dashboard" },
-  { href: "/freelancer/browse-jobs", label: "Browse Jobs" },
-  { href: "/freelancer/submit-proposal", label: "Submit Proposal" },
-  { href: "/freelancer/proposals", label: "My Proposals" },
-  { href: "/freelancer/projects", label: "My Projects" },
-  { href: "/freelancer/earnings", label: "Earnings" },
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/jobs", label: "Browse Jobs" },
+  { href: "/freelancer/skills", label: "Skills" },
+  { href: "/contracts", label: "Contracts" },
 ]
 
 export function FreelancerNav() {

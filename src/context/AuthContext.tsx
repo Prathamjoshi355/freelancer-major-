@@ -1,110 +1,205 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+
+import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
+
+import {
+  authAPI,
+  clearSession,
+  getStoredUser,
+  normalizeApiError,
+  storeSession,
+} from "@/services/apiService";
+import { ACCESS_TOKEN } from "@/tokens";
 
 type Role = "freelancer" | "client";
 
-interface User {
-  id?: string;
+type MarketplaceUser = {
+  id: string;
   email: string;
+  role: Role;
+  account_status?: string;
+  email_verified?: boolean;
+  face_verified?: boolean;
+  phone_verified?: boolean;
+  identity_verified?: boolean;
+  is_restricted?: boolean;
   full_name?: string;
   company_name?: string;
-  role: Role;
-}
+  [key: string]: any;
+};
 
-interface Profile {
-  completed: boolean;
+type MarketplaceProfile = {
+  id?: string;
+  full_name?: string;
+  profile_photo_url?: string;
+  company_name?: string;
+  city?: string;
+  country?: string;
+  description?: string;
+  internal_contact_info?: string;
+  preferred_communication_method?: string;
+  typical_response_time_hours?: number;
+  username?: string;
+  timezone?: string;
+  languages_spoken?: string[];
+  professional_title?: string;
   bio?: string;
-  skills?: string[];
+  experience_level?: string;
+  years_of_experience?: number;
+  categories?: string[];
+  portfolio_url?: string;
+  portfolio_items?: any[];
   hourly_rate?: number;
-}
+  fixed_project_rate?: number;
+  availability?: string;
+  working_hours?: string;
+  work_history?: any[];
+  education?: any[];
+  certifications?: any[];
+  github_url?: string;
+  linkedin_url?: string;
+  website_url?: string;
+  selected_skill_slugs?: string[];
+  verification?: Record<string, any>;
+  client_activity?: Record<string, any>;
+  client_credibility?: Record<string, any>;
+  system_metrics?: Record<string, any>;
+  reviews?: any[];
+  badges?: string[];
+  is_complete?: boolean;
+  completion_percentage?: number;
+  missing_requirements?: string[];
+  [key: string]: any;
+};
 
-interface AuthContextType {
-  user: User | null;
+type WorkflowState = {
+  profile_completed?: boolean;
+  selected_skills_count?: number;
+  passed_skills_count?: number;
+  marketplace_access?: boolean;
+  can_post_jobs?: boolean;
+  can_bid?: boolean;
+  can_pay?: boolean;
+  next_step?: string;
+  [key: string]: any;
+};
+
+type AuthContextType = {
+  user: MarketplaceUser | null;
+  profile: MarketplaceProfile | null;
+  workflow: WorkflowState | null;
+  role: Role | null;
   isAuthenticated: boolean;
   profileCompleted: boolean;
-  login: (user: User, token: string) => void;
+  loading: boolean;
+  error: string | null;
+  login: (user: MarketplaceUser, accessToken: string, refreshToken?: string | null) => Promise<void>;
   logout: () => void;
-  checkAuth: () => void;
-  updateProfile: (profile: Profile) => void;
-}
+  refreshSession: () => Promise<void>;
+  checkAuth: () => Promise<void>;
+  updateProfile: (profile: MarketplaceProfile, workflow?: WorkflowState | null) => void;
+  switchRole: () => void;
+};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [profileCompleted, setProfileCompleted] = useState(false);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<MarketplaceUser | null>(getStoredUser());
+  const [profile, setProfile] = useState<MarketplaceProfile | null>(null);
+  const [workflow, setWorkflow] = useState<WorkflowState | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Check auth on mount
-  useEffect(() => {
-    checkAuth();
+  const isAuthenticated = Boolean(user);
+  const profileCompleted = Boolean(workflow?.profile_completed || profile?.is_complete);
+  const role = user?.role ?? null;
+
+  const refreshSession = useCallback(async () => {
+    if (typeof window === "undefined") return;
+
+    const token = localStorage.getItem(ACCESS_TOKEN);
+    if (!token) {
+      setLoading(false);
+      setUser(null);
+      setProfile(null);
+      setWorkflow(null);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await authAPI.fetchMe();
+      const nextUser = response.data.user;
+      setUser(nextUser);
+      setProfile(response.data.profile ?? null);
+      setWorkflow(response.data.workflow ?? null);
+      storeSession(token, null, nextUser);
+      setError(null);
+    } catch (sessionError) {
+      clearSession();
+      setUser(null);
+      setProfile(null);
+      setWorkflow(null);
+      setError(normalizeApiError(sessionError));
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const checkAuth = () => {
-    try {
-      const token = localStorage.getItem("access_token");
-      const userData = localStorage.getItem("user_data");
-      const profileStatus = localStorage.getItem("profile_completed");
+  useEffect(() => {
+    void refreshSession();
+  }, [refreshSession]);
 
-      if (token && userData) {
-        const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
-        setIsAuthenticated(true);
-        setProfileCompleted(profileStatus === "true");
-      }
-    } catch (error) {
-      console.error("Auth check error:", error);
-      logout();
-    }
-  };
+  const login = useCallback(async (nextUser: MarketplaceUser, accessToken: string, refreshToken?: string | null) => {
+    storeSession(accessToken, refreshToken ?? null, nextUser);
+    setUser(nextUser);
+    setLoading(true);
+    await refreshSession();
+  }, [refreshSession]);
 
-  const login = (loginUser: User, token: string) => {
-    localStorage.setItem("access_token", token);
-    localStorage.setItem("user_data", JSON.stringify(loginUser));
-    localStorage.setItem("profile_completed", "false");
-    setUser(loginUser);
-    setIsAuthenticated(true);
-    setProfileCompleted(false);
-  };
-
-  const logout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("user_data");
-    localStorage.removeItem("profile_completed");
+  const logout = useCallback(() => {
+    clearSession();
     setUser(null);
-    setIsAuthenticated(false);
-    setProfileCompleted(false);
-  };
+    setProfile(null);
+    setWorkflow(null);
+    setError(null);
+  }, []);
 
-  const updateProfile = (profile: Profile) => {
-    if (profile.completed) {
-      localStorage.setItem("profile_completed", "true");
-      setProfileCompleted(true);
+  const updateProfile = useCallback((nextProfile: MarketplaceProfile, nextWorkflow?: WorkflowState | null) => {
+    setProfile(nextProfile);
+    if (nextWorkflow) {
+      setWorkflow(nextWorkflow);
     }
+  }, []);
+
+  const switchRole = useCallback(() => {
+    // Accounts are single-role; this exists only for compatibility with older components.
+  }, []);
+
+  const value: AuthContextType = {
+    user,
+    profile,
+    workflow,
+    role,
+    isAuthenticated,
+    profileCompleted,
+    loading,
+    error,
+    login,
+    logout,
+    refreshSession,
+    checkAuth: refreshSession,
+    updateProfile,
+    switchRole,
   };
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated,
-        profileCompleted,
-        login,
-        logout,
-        checkAuth,
-        updateProfile,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
-};
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
 
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error("useAuth must be used within AuthProvider");
   }
   return context;
-};
+}

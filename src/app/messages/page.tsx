@@ -14,7 +14,7 @@ export default function MessagesPage() {
     ],
     [],
   )
-  const [selected, setSelected] = useState<string>(conversations[0]?.id || null)
+  const [selected, setSelected] = useState<string | null>(conversations[0]?.id ?? null)
 
   const initialMessages =
     selected === "c2"

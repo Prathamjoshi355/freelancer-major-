@@ -62,10 +62,10 @@ export function SearchFilters({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All</SelectItem>
-              <SelectItem value="frontend">Frontend</SelectItem>
-              <SelectItem value="backend">Backend</SelectItem>
-              <SelectItem value="fullstack">Full-stack</SelectItem>
+              <SelectItem value="development">Development</SelectItem>
               <SelectItem value="design">Design</SelectItem>
+              <SelectItem value="writing">Writing</SelectItem>
+              <SelectItem value="marketing">Marketing</SelectItem>
             </SelectContent>
           </Select>
         </div>

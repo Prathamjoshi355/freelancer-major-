@@ -6,11 +6,13 @@ import { ReactNode, useEffect } from "react";
 interface ProtectedRouteProps {
   children: ReactNode;
   requireProfileCompletion?: boolean;
+  requiredRole?: "freelancer" | "client";  // If specified, only this role can access
 }
 
 export function ProtectedRoute({
   children,
   requireProfileCompletion = true,
+  requiredRole,
 }: ProtectedRouteProps) {
   const router = useRouter();
   const { isAuthenticated, profileCompleted, user } = useAuth();
@@ -28,19 +30,23 @@ export function ProtectedRoute({
       return;
     }
 
-    // Profile completion required but not completed
-    if (requireProfileCompletion && !profileCompleted) {
-      if (user.role === "freelancer") {
-        router.push("/freelancer/profile/edit");
-      } else if (user.role === "client") {
-        router.push("/client/profile/edit");
-      }
+    // Check if user has required role
+    if (requiredRole && user.role !== requiredRole) {
+      router.push("/dashboard");
       return;
     }
-  }, [isAuthenticated, profileCompleted, user, router, requireProfileCompletion]);
 
-  // Render children only if authenticated and profile requirements met
+    // Profile completion required but not completed
+    if (requireProfileCompletion && !profileCompleted) {
+      router.push("/onboarding/profile");
+      return;
+    }
+  }, [isAuthenticated, profileCompleted, user, router, requireProfileCompletion, requiredRole]);
+
+  // Render children only if authenticated and all requirements met
   if (!isAuthenticated) return null;
+
+  if (requiredRole && user?.role !== requiredRole) return null;
 
   if (requireProfileCompletion && !profileCompleted) return null;
 

@@ -1,4 +1,7 @@
+export const ACCESS_TOKEN = "access_token";
+export const REFRESH_TOKEN = "refresh_token";
+export const USER_DATA = "user_data";
 
-export const ACCESS_TOCKEN = 'access';
-export const REFRESH_TOKEN = 'refresh';
-export const GOOGLE_ACCESS_TOKEN = 'google_access_token';
+// Backward-compatible aliases for older components.
+export const ACCESS_TOCKEN = ACCESS_TOKEN;
+export const GOOGLE_ACCESS_TOKEN = "GOOGLE_ACCESS_TOKEN";

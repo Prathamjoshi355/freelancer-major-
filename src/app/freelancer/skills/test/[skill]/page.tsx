@@ -1,335 +1,158 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+
 import { useAuth } from "@/context/AuthContext";
+import { normalizeApiError, skillsAPI } from "@/services/apiService";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
-interface SkillTest {
-  skill: string;
-  questions: Array<{
-    id: number;
-    question: string;
-    options: string[];
-    correct: number;
-  }>;
-}
 
-const SKILL_TESTS: Record<string, SkillTest> = {
-  "JavaScript": {
-    skill: "JavaScript",
-    questions: [
-      {
-        id: 1,
-        question: "What is the difference between 'let' and 'var'?",
-        options: [
-          "No difference",
-          "let has block scope, var has function scope",
-          "var is newer than let",
-          "let is deprecated",
-        ],
-        correct: 1,
-      },
-      {
-        id: 2,
-        question: "What is Promise in JavaScript?",
-        options: [
-          "A function that returns a value",
-          "An object that represents async operation",
-          "A type of loop",
-          "A deprecated feature",
-        ],
-        correct: 1,
-      },
-      {
-        id: 3,
-        question: "Which of these is a pure function?",
-        options: [
-          "A function that modifies global variables",
-          "A function that performs I/O operations",
-          "A function that always returns the same output for same input",
-          "A function that uses setTimeout",
-        ],
-        correct: 2,
-      },
-    ],
-  },
-  "React": {
-    skill: "React",
-    questions: [
-      {
-        id: 1,
-        question: "What is a React Hook?",
-        options: [
-          "A way to hook components together",
-          "A function that hooks into React state and lifecycle features",
-          "A deprecated feature",
-          "A way to connect to a database",
-        ],
-        correct: 1,
-      },
-      {
-        id: 2,
-        question: "What is the virtual DOM?",
-        options: [
-          "A fake DOM in memory",
-          "An in-memory representation of the real DOM",
-          "A deprecated feature",
-          "A server-side rendering technique",
-        ],
-        correct: 1,
-      },
-      {
-        id: 3,
-        question: "When should you use useEffect?",
-        options: [
-          "For rendering components",
-          "For side effects that should run after render",
-          "For styling components",
-          "For routing",
-        ],
-        correct: 1,
-      },
-    ],
-  },
+type TestPageProps = {
+  params: Promise<{ skill: string }>;
 };
 
-export default function SkillTestPage({
-  params,
-}: {
-  params: { skill: string };
-}) {
+
+export default function SkillTestPage({ params }: TestPageProps) {
   const router = useRouter();
-  const { user } = useAuth();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [score, setScore] = useState(0);
-  const [answers, setAnswers] = useState<number[]>([]);
-  const [testStarted, setTestStarted] = useState(false);
-  const [testCompleted, setTestCompleted] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const { user, loading, isAuthenticated, refreshSession } = useAuth();
+  const [skillSlug, setSkillSlug] = useState("");
+  const [attempt, setAttempt] = useState<any | null>(null);
+  const [mcqAnswers, setMcqAnswers] = useState<Record<string, string>>({});
+  const [practicalAnswers, setPracticalAnswers] = useState<Record<string, string>>({});
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const skillName = decodeURIComponent(params.skill);
-  const test = SKILL_TESTS[skillName];
+  useEffect(() => {
+    Promise.resolve(params).then((resolved) => setSkillSlug(resolved.skill));
+  }, [params]);
 
-  if (!test) {
-    return (
-      <Card className="max-w-2xl mx-auto">
-        <CardHeader>
-          <CardTitle>Skill Test Not Found</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p>The skill test for "{skillName}" is not available.</p>
-          <Button
-            onClick={() => router.back()}
-            className="mt-4"
-          >
-            Go Back
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const handleAnswerSelect = (optionIndex: number) => {
-    const newAnswers = [...answers];
-    newAnswers[currentQuestion] = optionIndex;
-    setAnswers(newAnswers);
-
-    if (optionIndex === test.questions[currentQuestion].correct) {
-      setScore((prev) => prev + 1);
+  useEffect(() => {
+    if (!loading && (!isAuthenticated || user?.role !== "freelancer")) {
+      router.push("/dashboard");
+      return;
     }
-  };
+    if (!skillSlug) return;
 
-  const handleNext = () => {
-    if (currentQuestion < test.questions.length - 1) {
-      setCurrentQuestion((prev) => prev + 1);
-    } else {
-      setTestCompleted(true);
-    }
-  };
+    void startAttempt();
+  }, [isAuthenticated, loading, router, skillSlug, user]);
 
-  const handleSubmitScore = async () => {
-    setLoading(true);
+  async function startAttempt() {
     try {
-      const token = localStorage.getItem("access_token");
-      const percentage = (score / test.questions.length) * 100;
-
-      const response = await fetch("http://localhost:8000/api/profiles/tests/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          skill: skillName,
-          score: percentage,
-        }),
-      });
-
-      if (response.ok) {
-        setTimeout(() => {
-          router.push("/freelancer/dashboard");
-        }, 2000);
-      }
-    } catch (error) {
-      console.error("Error submitting score:", error);
-    } finally {
-      setLoading(false);
+      const response = await skillsAPI.start(skillSlug);
+      setAttempt(response.data.attempt);
+    } catch (startError) {
+      setError(normalizeApiError(startError));
     }
-  };
-
-  if (!testStarted) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
-        <Card className="max-w-2xl mx-auto">
-          <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-            <CardTitle className="text-2xl">{skillName} Skill Test</CardTitle>
-            <CardDescription className="text-blue-100">
-              Test your knowledge and get verified
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              <p className="text-gray-700">
-                This test contains {test.questions.length} questions. You need to
-                answer at least 70% correctly to pass.
-              </p>
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <p className="font-semibold text-blue-900">Test Details:</p>
-                <ul className="mt-2 space-y-1 text-blue-800">
-                  <li>• {test.questions.length} Multiple Choice Questions</li>
-                  <li>• 70% pass score required</li>
-                  <li>• Immediate results</li>
-                  <li>• Badge upon completion</li>
-                </ul>
-              </div>
-              <Button
-                onClick={() => setTestStarted(true)}
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-2 rounded-lg"
-              >
-                Start Test
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
   }
 
-  if (testCompleted) {
-    const percentage = (score / test.questions.length) * 100;
-    const passed = percentage >= 70;
-
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
-        <Card className="max-w-2xl mx-auto">
-          <CardHeader className={`${passed ? "bg-green-600" : "bg-red-600"} text-white`}>
-            <CardTitle className="text-2xl">
-              {passed ? "🎉 Test Passed!" : "❌ Test Failed"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className="text-center space-y-4">
-              <div className="text-5xl font-bold text-gray-900">
-                {percentage.toFixed(1)}%
-              </div>
-              <p className="text-gray-700">
-                You got {score} out of {test.questions.length} questions correct
-              </p>
-              {passed && (
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <p className="text-green-900 font-semibold">
-                    ✓ {skillName} skill badge unlocked!
-                  </p>
-                </div>
-              )}
-              <Button
-                onClick={handleSubmitScore}
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-2 rounded-lg"
-              >
-                {loading ? "Saving..." : "Continue to Dashboard"}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
+  async function submitAttempt() {
+    if (!attempt) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const response = await skillsAPI.submit(skillSlug, {
+        attempt_id: attempt.id,
+        mcq_answers: mcqAnswers,
+        practical_answers: attempt.practical_questions.map((question: any) => ({
+          question_id: question.id,
+          answer: practicalAnswers[question.id] ?? "",
+        })),
+      });
+      setAttempt(response.data.attempt);
+      await refreshSession();
+    } catch (submitError) {
+      setError(normalizeApiError(submitError));
+    } finally {
+      setSubmitting(false);
+    }
   }
 
-  const question = test.questions[currentQuestion];
-  const answered = answers[currentQuestion] !== undefined;
+  if (loading || !skillSlug) {
+    return <div className="py-16 text-center text-slate-500">Loading skill test...</div>;
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
-      <Card className="max-w-2xl mx-auto">
+    <div className="space-y-8">
+      <Card className="border-white/70 bg-white/90 shadow-[0_24px_80px_rgba(15,23,42,0.08)]">
         <CardHeader>
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle>{skillName} Test</CardTitle>
-              <CardDescription>
-                Question {currentQuestion + 1} of {test.questions.length}
-              </CardDescription>
-            </div>
-            <div className="text-right">
-              <p className="text-sm text-gray-600">Score: {score}</p>
-              <div className="w-32 bg-gray-200 rounded-full h-2 mt-2">
-                <div
-                  className="bg-blue-600 h-2 rounded-full transition-all"
-                  style={{
-                    width: `${((currentQuestion + 1) / test.questions.length) * 100}%`,
-                  }}
-                ></div>
-              </div>
-            </div>
-          </div>
+          <CardTitle className="font-serif text-3xl">Skill Test: {skillSlug}</CardTitle>
         </CardHeader>
-
-        <CardContent className="pt-6">
-          <div className="space-y-4">
-            <p className="text-lg font-semibold text-gray-900">
-              {question.question}
-            </p>
-
-            <div className="space-y-2">
-              {question.options.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleAnswerSelect(index)}
-                  className={`w-full p-3 text-left rounded-lg border-2 transition ${
-                    answers[currentQuestion] === index
-                      ? "border-blue-600 bg-blue-50"
-                      : "border-gray-200 bg-white hover:border-blue-300"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    checked={answers[currentQuestion] === index}
-                    onChange={() => {}}
-                    className="mr-3"
-                  />
-                  {option}
-                </button>
-              ))}
+        <CardContent className="space-y-4">
+          {error ? <p className="text-sm text-red-600">{error}</p> : null}
+          {attempt?.status === "completed" ? (
+            <div className="space-y-3 text-sm leading-7 text-slate-700">
+              <p>MCQ Score: {attempt.mcq_score}</p>
+              <p>Practical Score: {attempt.practical_score}</p>
+              <p>Weighted Rating: {attempt.overall_rating}</p>
+              <p>Status: {attempt.passed ? "Passed" : "Needs improvement"}</p>
+              <Button variant="outline" onClick={() => router.push("/freelancer/skills")}>
+                Back to Skills
+              </Button>
             </div>
+          ) : (
+            <div className="space-y-8">
+              <section className="space-y-4">
+                <h2 className="font-serif text-2xl">MCQ Section</h2>
+                {(attempt?.mcq_questions ?? []).slice(0, 10).map((question: any, index: number) => (
+                  <div key={question.id} className="rounded-3xl border border-slate-200 p-4">
+                    <p className="font-medium text-slate-900">
+                      {index + 1}. {question.prompt}
+                    </p>
+                    <div className="mt-3 grid gap-2">
+                      {question.options.map((option: string) => (
+                        <label key={option} className="flex items-center gap-3 text-sm text-slate-700">
+                          <input
+                            type="radio"
+                            name={question.id}
+                            value={option}
+                            checked={mcqAnswers[question.id] === option}
+                            onChange={(event) =>
+                              setMcqAnswers((current) => ({
+                                ...current,
+                                [question.id]: event.target.value,
+                              }))
+                            }
+                          />
+                          {option}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                <p className="text-xs text-slate-500">
+                  The backend generates a 50-question session. This UI shows the
+                  first 10 questions for a faster local workflow.
+                </p>
+              </section>
 
-            <Button
-              onClick={handleNext}
-              disabled={!answered}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50"
-            >
-              {currentQuestion === test.questions.length - 1
-                ? "Finish Test"
-                : "Next Question"}
-            </Button>
-          </div>
+              <section className="space-y-4">
+                <h2 className="font-serif text-2xl">Practical Section</h2>
+                {(attempt?.practical_questions ?? []).map((question: any) => (
+                  <div key={question.id} className="space-y-3 rounded-3xl border border-slate-200 p-4">
+                    <p className="font-medium text-slate-900">{question.prompt}</p>
+                    <Textarea
+                      value={practicalAnswers[question.id] ?? ""}
+                      onChange={(event) =>
+                        setPracticalAnswers((current) => ({
+                          ...current,
+                          [question.id]: event.target.value,
+                        }))
+                      }
+                      placeholder="Write your solution, architecture, or implementation plan..."
+                    />
+                  </div>
+                ))}
+              </section>
+
+              <Button onClick={submitAttempt} disabled={submitting}>
+                {submitting ? "Submitting..." : "Submit Test"}
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
