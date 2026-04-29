@@ -18,11 +18,17 @@ type SkillItem = {
 };
 
 type FreelancerSkillItem = {
+  id: string;
   skill: SkillItem;
   test_status: string;
-  rating: number;
-  mcq_score: number;
-  practical_score: number;
+  mcq_stars: number;
+  practical_stars: number;
+  total_stars: number;
+  attempts: number;
+  review_mode: string;
+  review_notes: string | null;
+  selected_at: string;
+  reviewed_at: string | null;
 };
 
 
@@ -143,11 +149,14 @@ export default function FreelancerSkillsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-slate-700">
-              <p>MCQ Score: {mapping.mcq_score}</p>
-              <p>Practical Score: {mapping.practical_score}</p>
-              <p>Rating: {mapping.rating}</p>
+              <p>MCQ Stars: <strong>{mapping.mcq_stars}/7</strong></p>
+              <p>Practical Stars: <strong>{mapping.practical_stars}/3</strong> {mapping.test_status === 'completed' && '(peer rated)'}</p>
+              <p>Total Stars: <strong>{mapping.total_stars}/10</strong></p>
+              <p className="text-xs text-slate-500">Attempts: {mapping.attempts}</p>
               <Link href={`/freelancer/skills/test/${mapping.skill.slug}`}>
-                <Button variant="outline">Open Test</Button>
+                <Button variant="outline" className="w-full">
+                  {mapping.test_status === 'completed' ? 'View Results' : 'Start Test'}
+                </Button>
               </Link>
             </CardContent>
           </Card>
